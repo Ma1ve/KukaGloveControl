@@ -1,0 +1,84 @@
+nano etc/network/interfaces
+--------------------------------------
+#MicroTik router
+iface enp0s25 inet static
+        address 192.168.88.2n
+        netmask 255.255.255.0
+        gateway 192.168.88.6
+        dns-nameservers 192.168.88.6 8.8.8.8
+
+# The primary network interface
+auto enp0s25
+auto ens36
+iface ens36 inet manual
+up ifconfig ens36 up
+-----------------------------------------
+nano /etc/ssh/sshd_config
+PermitRootLogin yes
+
+
+ifdown -a && ifup -a
+
+
+sudo apt-get update -y
+sudo apt-get upgrade -y
+sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+sudo apt install curl -y
+curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+sudo apt-get update -y
+sudo apt-get install ros-kinetic-ros-base -y
+echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc source ~/.bashrc
+sudo apt install python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential -y
+sudo rosdep init
+rosdep update
+
+mkdir -p ~/catkin_ws/src
+cd ~/catkin_ws/src
+git clone https://github.com/youbot/youbot_driver_ros_interface.git
+git clone -b kinetic-devel https://github.com/youbot/youbot_description.git
+
+
+sudo apt install ros-kinetic-driver-base -y
+sudo apt install ros-kinetic-youbot-driver -y
+
+sudo apt install ros-kinetic-brics-actuator -y
+sudo apt install ros-kinetic-control-msgs -y
+sudo apt install ros-kinetic-pr2-msgs -y
+sudo apt install ros-kinetic-tf -y
+
+sudo apt install ros-kinetic-cv-bridge -y
+sudo apt install ros-kinetic-openni* -y
+sudo apt install ros-kinetic-web-video-server -y
+sudo apt install ros-kinetic-robot-state-publisher -y
+
+
+
+
+nano /opt/ros/kinetic/share/youbot_driver/config/youbot-ethercat.cfg
+Значение EthernetDevice c eth0 на ens36
+
+
+
+
+sudo nano /etc/openni/GlobalDefaults.ini
+раскоментить UsbInterface=2
+перезапустить
+
+сначала
+
+source ./opt/ros/kinetic/setup.bash
+
+cd ~/catkin_ws
+catkin_make
+
+nano ~/.bashrc
+в самом низу после source
+source /home/youbot/catkin_ws/devel/setup.bash
+
+cd ~/catkin_ws
+catkin_make
+scp -r "/home/ubuntu/ZaSKaR/youbot_tl_test" "root@192.168.88.23:/home/youbot/catkin_ws/src/youbot_tl_test/"
+scp -r "/home/ubuntu/ZaSKaR/hokuyo_node" "root@192.168.88.23:/home/youbot/catkin_ws/src/hokuyo_node"
+catkin_make
+#here execute full reboot
+roslaunch youbot_tl_test ytl.launch
